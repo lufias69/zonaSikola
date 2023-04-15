@@ -1,12 +1,15 @@
-import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, Text, View, FlatList, Image, Button, Linking, SafeAreaView } from 'react-native';
+import {Dimensions, StatusBar } from 'expo-status-bar';
+import { ScrollView, StyleSheet, Text, View, FlatList, Image, Button, Linking, SafeAreaView, TouchableOpacity } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import React, { useState, useEffect, useCallback} from 'react';
 import * as Location from 'expo-location';
+import * as WebBrowser from 'expo-web-browser';
 import MapView from 'react-native-maps';
 // const axios = require("axios");
 import axios from 'axios';
 // import React, {useCallback} from 'react';
+
+
 
 export default function App() {
   const [open, setOpen] = useState(false);
@@ -33,7 +36,8 @@ export default function App() {
 
   const [datalocation, setLocation] = useState(null);
   useEffect(() => {
-    (async () => {
+    try{
+      (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
@@ -41,14 +45,15 @@ export default function App() {
       }
       let location = await Location.getCurrentPositionAsync({});
       setLocation(location);
+      console.log("Titik Koordinat OK!!")
     })();
+    }catch {
+      console.error("Multiple fetch failed 1"); // Error message logs to console
+    }
+    
   }, []);
 
-  // if (datalocation){
-  //   console.log(typeof(datalocation.coords.latitude) )
-  //   console.log(typeof(datalocation.coords.longitude))
-  // }
-  
+ 
   //akhir mengambil titik koordinat
 
 
@@ -175,7 +180,7 @@ export default function App() {
       setFetchedState('loading')
 
       if (dataKelurahan){
-        console.log(dataKelurahan)
+        // console.log(dataKelurahan)
         // console.log(typeof(value) )
         // console.log(value)
         // console.log(dataKelurahan[value.toString()].sekolah)
@@ -189,19 +194,19 @@ export default function App() {
           // console.log(datalocation.coords.latitude+','+datalocation.coords.longitude)
           // console.log(koordinat)
 
-          const options = {
-            method: 'GET',
-            headers: {
-              'X-RapidAPI-Key': 'e3a2658bf1mshdec51abb7a633e9p180578jsn450d4f610839',
-              'X-RapidAPI-Host': 'waze.p.rapidapi.com'
-            }
-          };
-          setTimeout(function() {
-          fetch('https://waze.p.rapidapi.com/driving-directions?source_coordinates='+datalocation.coords.latitude+','+datalocation.coords.longitude+'&destination_coordinates='+koordinat+','+ options)
-            .then(response => response.json())
-            .then(response => console.log(response))
-            .catch(err => console.error(err));
-          }, 30000);
+          // const options = {
+          //   method: 'GET',
+          //   headers: {
+          //     'X-RapidAPI-Key': 'e3a2658bf1mshdec51abb7a633e9p180578jsn450d4f610839',
+          //     'X-RapidAPI-Host': 'waze.p.rapidapi.com'
+          //   }
+          // };
+          // setTimeout(function() {
+          // fetch('https://waze.p.rapidapi.com/driving-directions?source_coordinates='+datalocation.coords.latitude+','+datalocation.coords.longitude+'&destination_coordinates='+koordinat+','+ options)
+          //   .then(response => response.json())
+          //   .then(response => console.log(response))
+          //   .catch(err => console.error(err));
+          // }, 30000);
 
           
           // const options = {
@@ -246,14 +251,12 @@ export default function App() {
 
           arah = 'https://www.google.com/maps/dir/'+datalocation.coords.latitude+','+datalocation.coords.longitude +'/'+ koordinat
           dataKelurahan[value.toString()].sekolah[i].arah = arah
-          console.log(dataKelurahan[value.toString()].sekolah[i].arah)
+          // console.log(dataKelurahan[value.toString()].sekolah[i].arah)
 
           dataKelurahan[value.toString()].sekolah[i].foto = 'http://103.37.124.94:1337'+Foto[id].thumbnail
-          console.log(dataKelurahan[value.toString()].sekolah[i].foto)
-
+          // console.log(dataKelurahan[value.toString()].sekolah[i].foto)
           // console.log(Foto[id].thumbnail)
         }
-
       }
 
     },[value]);
@@ -266,70 +269,57 @@ export default function App() {
       console.log(dataRender)
     },[value]);
 
-    // dataKelurahan[value.toString()].sekolah
 
-    // useEffect(() => {
-    //   setFetchedState('loading')
-    //   if (datalocation){
-    //     console.log('update data lokasi')
-    //     setRegion = useState({
-    //       latitude: datalocation.coords.latitude,
-    //       longitude: datalocation.coords.longitude,
-    //       latitudeDelta: 0.0222,
-    //       longitudeDelta: 0.0222,})
-    //   }
-      
-    // },[datalocation]);
 
-  // console.log(dataKelurahan.value)
+
   return (
-    // <View style={styles.container}>
-    //   <Text>Jancook</Text>
-    //   <StatusBar style="auto" />
-    // </View>
-    //
-
     <View style={StyleSheet.absoluteFillObject}> 
       <MapView style={StyleSheet.absoluteFillObject}
                 region={region} />
-      <View >
-        <Text style={{fontSize:24,fontWeight:'bold', textAlign:'center', marginTop:30}}>Zonasi Sekolah SMP Kota Kendari</Text>
-      </View>
-      <View style={{marginTop:5, marginLeft:10, marginRight:10}} >
-      {/* <SafeAreaView> */}
-          <DropDownPicker
-          searchTextInputStyle={{
-            color:'#FFFFFF',
-            backgroundColor:'skyblue',
-            borderWidth:0,
-            elevation:2,
-            borderRadius:3,
-            paddingVertical:8,
-          }}
-          placeholder="Pilih Kelurahan Domisi Anda!"
-          searchPlaceholder="Ketikkan Nama Kelurahan..."
-          searchable={true}
-          listMode="FLATLIST"
-          flatListProps={{
-            initialNumToRender: 10
-          }}
-          modalProps={{
-            animationType: "fade"
-          }}
+        <View style={{marginTop:50}}>
+        </View>
+        <View style={{flexDirection:'row'}}>
+          <About/>
+          <Text style={{fontSize:28,fontWeight:'bold', textAlign:'center', marginTop:10}}>Zonasi SMP Kota Kendari</Text>
+        </View>
+        
+        <View style={{marginTop:5, marginLeft:10, marginRight:10, zIndex: 1}} >
+              <DropDownPicker
+              dropDownDirection="BOTTOM"
+              searchTextInputStyle={{
+                color:'#FFFFFF',
+                backgroundColor:'skyblue',
+                borderWidth:0,
+                elevation:2,
+                borderRadius:3,
+                paddingVertical:8,
+              }}
+              placeholder="Pilih Kelurahan Domisi Anda!"
+              searchPlaceholder="Ketikkan Nama Kelurahan..."
+              searchable={true}
+              listMode="FLATLIST"
+              flatListProps={{
+                initialNumToRender: 10
+              }}
+              modalProps={{
+                animationType: "fade"
+              }}
 
-          open={open}
-          value={value}
-          items={items}
-          setOpen={setOpen}
-          setValue={setValue}
-          setItems={setItems}
-          scrollViewProps={{
-            decelerationRate: "fast"
-          }}
-        />
-        {/* <View style={{backgroundColor:'#FFF3E2', flex:1, height:100}}/> */}
-    </View>
-        <View style={{marginTop:180}}>
+              open={open}
+              value={value}
+              items={items}
+              setOpen={setOpen}
+              setValue={setValue}
+              setItems={setItems}
+              scrollViewProps={{
+                decelerationRate: "fast"
+              }}
+            />
+        </View>
+        {/* <ScrollView> */}
+        <View style={{marginBottom:0, flex:6}}>
+        {/* <MyArray data={dataRender}/> */}
+        
           <FlatList
               data={dataRender}
               renderItem={({item}) => 
@@ -345,39 +335,105 @@ export default function App() {
               }
               keyExtractor={item => item.id_sekolah}
             />
+            
+            
+        </View>
+        {/* </ScrollView> */}
+        <View>
+              {/* {/* <Text> </Text> */}
+              
+              <Text style={{textAlign:'center'}}></Text>
         </View>
 
+      
+  <View/>
   </View>
+  //{/* </SafeAreaView> */}
   );
 }
 
+const Rute = ({a})=> {
+  const [arah, setArah] = useState({a});
+  // console.log(arah.a)
+  const pressURL = useCallback(async () => {
+    // console.log(arah)
+    // Checking if the link is supported for links with custom URL scheme.
+    const supported = await Linking.canOpenURL(arah.a);
+    if (supported) {
+      // Opening the link with some app, if the URL scheme is "http" the web link should be opened
+      // by some browser in the mobile
+      await Linking.openURL(arah.a);
+    } else {
+      Alert.alert(`Don't know how to open this URL: ${arah.a}`);
+    }
+  },);
+  return(
+    <View>
+      <Button
+        onPress={pressURL}
+        title="Rute"
+        color="#57C5B6"
+        accessibilityLabel="Learn more about this purple button"
+            // style={{flex:1}}
+          />
+    </View>
 
-const Card = (props) =>{
-  url = props.url
+  );
+}
+
+// const Jarak = () =>{
+
+//   const options = {
+//             method: 'GET',
+//             headers: {
+//               'X-RapidAPI-Key': 'e3a2658bf1mshdec51abb7a633e9p180578jsn450d4f610839',
+//               'X-RapidAPI-Host': 'waze.p.rapidapi.com'
+//             }
+//           };
+//           setTimeout(function() {
+//           fetch('https://waze.p.rapidapi.com/driving-directions?source_coordinates='+datalocation.coords.latitude+','+datalocation.coords.longitude+'&destination_coordinates='+koordinat+','+ options)
+//             .then(response => response.json())
+//             .then(response => console.log(response))
+//             .catch(err => console.error(err));
+//           }, 30000);
+
+//   return (
+//     console.log(response)
+//   );
+// }
+
+const Detail = ({a})=> {
+  // console.log(a)
+  const [arah, setArah] = useState({a});
+  const [result, setResult] = useState(null);
   const pressURL = useCallback(async () => {
     // Checking if the link is supported for links with custom URL scheme.
-    const supported = await Linking.canOpenURL(url);
+    const supported = await Linking.canOpenURL(arah.a); //WebBrowser.openBrowserAsync
     if (supported) {
-      // Opening the link with some app, if the URL scheme is "http" the web link should be opened
-      // by some browser in the mobile
-      await Linking.openURL(url);
-    } else {
-      Alert.alert(`Don't know how to open this URL: ${url}`);
-    }
-  }, [url]);
+      let result = await WebBrowser.openBrowserAsync(arah.a);
+      setResult(result);
 
-  urlDetail = props.Detail
-  const pressDetail = useCallback(async () => {
-    // Checking if the link is supported for links with custom URL scheme.
-    const supported = await Linking.canOpenURL(urlDetail);
-    if (supported) {
-      // Opening the link with some app, if the URL scheme is "http" the web link should be opened
-      // by some browser in the mobile
-      await Linking.openURL(urlDetail);
     } else {
-      Alert.alert(`Don't know how to open this URL: ${urlDetail}`);
+      Alert.alert(`Don't know how to open this URL: ${arah.a}`);
     }
-  }, [urlDetail]);
+  },);
+  return(
+    <View>
+      <Button
+        onPress={pressURL}
+        title="Detail"
+        color="#159895"
+        accessibilityLabel="Learn more about this purple button"
+            // style={{flex:1}}
+          />
+          {/* <Text>{result && JSON.stringify(result)}</Text> */}
+    </View>
+
+  );
+}
+
+const Card = (props) =>{
+
 
   urlPendaftaran = 'https://dikmudora.kendarikota.go.id/ppdb/?m=home&j=smp'
   const pressPendaftaran = useCallback(async () => {
@@ -411,19 +467,10 @@ const Card = (props) =>{
           <Text style={{flex: 1, flexWrap: 'wrap'}}>Alamat : {props.alamat}</Text>
         </View>
         <View style={{flexDirection:'row'}}>
-          <Button
-            onPress={pressURL}
-            title="Rute"
-            color="#57C5B6"
-            accessibilityLabel="Learn more about this purple button"
-            // style={{flex:1}}
-          />
-          <Button
-            onPress={pressDetail}
-            title="Detail"
-            color="#159895"
-            accessibilityLabel="Learn more about this purple button"
-          />
+         
+
+          <Rute a= {props.url}/>
+          <Detail a= {props.Detail}/>
           <Button
             onPress={pressPendaftaran}
             title="Pendaftaran"
@@ -455,5 +502,99 @@ const styles2 = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+  },
+});
+
+
+
+
+
+// import React, {useState} from 'react';
+import {Alert, Modal, Pressable} from 'react-native';
+
+const About = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  return (
+    // style={styles4.centeredView}
+    <View >
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          Alert.alert('Modal has been closed.');
+          setModalVisible(!modalVisible);
+        }}>
+        <View style={styles4.centeredView}>
+          <View style={styles4.modalView}>
+            <Text style={{fontSize:18, fontWeight:'bold'}}>Tentang Kami</Text>
+            <Text>Sistem Informasi Zonasi Sekolah Menengah Pertama (SMP) Kota Kendari</Text>
+            <Text style={{fontSize:13, fontWeight:'bold', textAlign:'left'}}>Versi Beta</Text>
+            <Text>Nama dan NIM</Text>
+            <Text>Dosen Pembimbing:</Text>
+            <Text>1. Nama</Text>
+            <Text>2. Nama</Text>
+            <Text >Program Studi Pendidikan Teknologi Informasi</Text>
+            <Text >Universitas Muhammadiyah Kendari</Text>
+            <Pressable
+              style={[styles4.button, styles4.buttonClose]}
+              onPress={() => setModalVisible(!modalVisible)}>
+              <Text style={styles4.textStyle}>Tutup</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+      <Pressable
+        style={[styles4.button, styles4.buttonOpen]}
+        onPress={() => setModalVisible(true)}>
+        <Text style={styles4.textStyle}>[ZS]</Text>
+
+        
+      </Pressable>
+    </View>
+  );
+};
+
+const styles4 = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  buttonOpen: {
+    backgroundColor: '#1A5F7A',
+  },
+  buttonClose: {
+    backgroundColor: '#2196F3',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
   },
 });
